@@ -1,0 +1,96 @@
+# User-specific files
+.idea/
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows Installer files
+Thumbs.db
+ehthumbs.db
+
+# Windows Installer package
+*.ps1
+
+# .NET Core / .NET 5+ build output
+bin/
+obj/
+out/
+
+# .NET Core / .NET 5+ Publish output
+.publish/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# VS for Mac
+.vscode/
+
+# .NET Core global tools
+dotnet-tools.json
+
+# User-specific files for JetBrains Rider
+.idea/
+
+# .NET Core temporary files
+# Windows installer
+*.vsix
+*.vscode
+
+# User-level project data
+.idea/
+
+# ReSharper files
+.idea/
+
+# NPM packages
+node_modules/
+
+# TypeScript
+*.js
+*.tsbuildinfo
+*.d.ts
+
+# Webpack build output
+webpack/
+
+# Coverage reports
+coverage/
+
+# ASP.NET Core development certificate
+development-certificate.pfx
+
+# .NET Core unit tests project output
+TestResults/
+
+# Nunit test results
+TestResults/
+
+# User-specific ASP.NET files
+project.lock.json
+project.fragment.lock.json
+
+# Windows Installer files
+*.cab
+*.msi
+
+# Windows Installer files
+node_modules/
+
+# JetBrains Rider config
+.idea/
+
+# Linux specific files
+.idea/
+.DS_Store
+
+# macOS specific files
+.DS_Store
