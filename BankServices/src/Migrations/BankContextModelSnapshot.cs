@@ -28,7 +28,7 @@ namespace BankServices.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal?>("Amount")
+                    b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
                     b.Property<string>("Document")
@@ -41,7 +41,7 @@ namespace BankServices.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ClientAccounts");
+                    b.ToTable("ClientAccount", (string)null);
                 });
 #pragma warning restore 612, 618
         }

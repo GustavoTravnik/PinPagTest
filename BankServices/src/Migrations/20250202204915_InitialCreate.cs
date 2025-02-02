@@ -12,17 +12,17 @@ namespace BankServices.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ClientAccounts",
+                name: "ClientAccount",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Document = table.Column<string>(type: "text", nullable: false),
-                    Amount = table.Column<decimal>(type: "numeric", nullable: true)
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ClientAccounts", x => x.Id);
+                    table.PrimaryKey("PK_ClientAccount", x => x.Id);
                 });
         }
 
@@ -30,7 +30,7 @@ namespace BankServices.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ClientAccounts");
+                name: "ClientAccount");
         }
     }
 }
