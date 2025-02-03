@@ -2,7 +2,7 @@
 
 namespace BankServices.Services
 {
-    public interface IBankServices
+    public interface IBankService
     {
         Task CreateClientAccount(ClientAccountDto client);
         Task<decimal> EditClientAccount(ClientAccountIdentifyerDto account, BankMovementDto movement);

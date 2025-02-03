@@ -1,7 +1,7 @@
 ﻿namespace BankServices.Exceptions
 {
     [Serializable]
-    internal class ClientAccountNotFoundException(string? message) : BankApplicationException(message)
+    public class ClientAccountNotFoundException(string? message) : BankApplicationException(message)
     {
     }
 }

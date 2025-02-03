@@ -1,7 +1,7 @@
 ﻿namespace BankServices.Exceptions
 {
     [Serializable]
-    internal class DuplicatedClientAccountException(string message) : BankApplicationException(message)
+    public class DuplicatedClientAccountException(string message) : BankApplicationException(message)
     {
     }
 }

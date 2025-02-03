@@ -10,9 +10,9 @@ namespace BankServices.Controllers
     [Route("api/[controller]")]
     public class ClientAccount : Controller
     {
-        private readonly IBankServices _bankServices;
+        private readonly IBankService _bankServices;
 
-        public ClientAccount(IBankServices bankServices)
+        public ClientAccount(IBankService bankServices)
         {
             _bankServices = bankServices;
         }

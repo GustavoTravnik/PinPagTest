@@ -8,11 +8,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<BankContext>(options =>
+
+if (builder.Environment.IsEnvironment("Test"))
+{
+    builder.Services.AddDbContext<BankContext>(options =>
+        options.UseInMemoryDatabase("TestDatabase"));
+}
+else
+{
+    builder.Services.AddDbContext<BankContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
     {
         npgsqlOptions.MapEnum<TransactionTypes>("transactiontypes");
     }));
+}
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -20,7 +29,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.AllowTrailingCommas = true;
     });
 
-builder.Services.AddScoped<IBankServices, BankServices.Services.BankServices>();
+builder.Services.AddScoped<IBankService, BankServices.Services.BankService>();
 
 var app = builder.Build();
 

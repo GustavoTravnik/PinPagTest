@@ -2,26 +2,33 @@
 using BankServices.Dto;
 using BankServices.Entities;
 using BankServices.Exceptions;
+using BankServices.Utils;
 using Microsoft.EntityFrameworkCore;
 using static BankServices.Entities.BankTransaction;
 
 namespace BankServices.Services
 {
-    public class BankServices : IBankServices
+    public class BankService : IBankService
     {
         private readonly BankContext _context;
 
-        public BankServices(BankContext context)
+        public BankService(BankContext context)
         {
             _context = context;
         }
 
         public async Task CreateClientAccount(ClientAccountDto client)
         {
-            var currentClientAccount = await _context.ClientAccounts.SingleOrDefaultAsync(c => c.Document == client.Document);
+            if (client.Amount < 0)
+            {
+                throw new InvalidBankMovementException("The amount must be zero or greater.");
+            }
+
+            var validCpf = CpfValidator.GetValidCpf(client.Document) ?? throw new InvalidBankMovementException("The document(CPF) is invalid");
+            var currentClientAccount = await _context.ClientAccounts.SingleOrDefaultAsync(c => c.Document == validCpf);
             if (currentClientAccount == null)
             {
-                await _context.ClientAccounts.AddAsync(new ClientAccount { Name = client.Name, Document = client.Document, Amount = client.Amount });
+                await _context.ClientAccounts.AddAsync(new ClientAccount { Name = client.Name, Document = validCpf, Amount = client.Amount });
                 await _context.SaveChangesAsync();
             }
             else
@@ -105,9 +112,12 @@ namespace BankServices.Services
         }
 
         private async Task<ClientAccount> ValidadeAndGetClientAccountFromIdentifyerDto(ClientAccountIdentifyerDto account)
-            => await _context.ClientAccounts.SingleOrDefaultAsync(c => c.Id == account.Id || c.Document == account.Document)
-                ?? throw new ClientAccountNotFoundException("Client account not found.");
-
+        {
+            var parsedDocument = account?.Document;
+            var accountId = account?.Id;
+            return await _context.ClientAccounts.SingleOrDefaultAsync(c => c.Id == accountId || c.Document == CpfValidator.GetValidCpf(parsedDocument))
+                        ?? throw new ClientAccountNotFoundException("Client account not found.");
+        }
 
         private async Task RegisterTransaction(ClientAccount account, BankMovementDto movement)
         {
