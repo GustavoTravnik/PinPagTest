@@ -6,7 +6,7 @@ namespace BankServices.Extentions
     {
         public static bool IsInternalExeption(this object obj)
         {
-            return obj.GetType().IsSubclassOf(typeof(BankApplicationException));
+            return obj != null && obj.GetType().IsSubclassOf(typeof(BankApplicationException)) && ((BankApplicationException)obj).IsBusinessException;
         }
     }
 }

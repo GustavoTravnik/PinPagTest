@@ -3,6 +3,7 @@ using BankServices.Dto;
 using BankServices.Entities;
 using BankServices.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using static BankServices.Entities.BankTransaction;
 
 namespace BankServices.Services
 {
@@ -29,50 +30,93 @@ namespace BankServices.Services
             }
         }
 
-        public async Task<decimal> EditClientAccount(ClientAccountMovimentDto account, BankMovementDto movement)
+        public async Task<decimal> EditClientAccount(ClientAccountIdentifyerDto account, BankMovementDto movement)
         {
             if (movement.Amount <= 0)
             {
                 throw new InvalidBankMovementException("The amount must be greater than zero.");
             }
 
-            if (account.Id != null && account.Document != null)
+            ClientAccountIdentifyerDto.ValidateParams(account);
+
+            var currentClientAccount = await ValidadeAndGetClientAccountFromIdentifyerDto(account);
+
+            if (movement.Type == TransactionTypes.In)
             {
-                throw new InvalidBankMovementException("You must specify only one of account identifyer, Id or Document.");
+                currentClientAccount.Amount += movement.Amount;
             }
-
-            var currentClientAccount = await _context.ClientAccounts
-                .SingleOrDefaultAsync(c => c.Id == account.Id || c.Document == account.Document);
-
-            if (currentClientAccount != null)
+            else if (movement.Type == TransactionTypes.Out)
             {
-                if (movement.Type == BankMovementDto.MovementType.Deposit)
-                {
-                    currentClientAccount.Amount += movement.Amount;
-                }
-                else if (movement.Type == BankMovementDto.MovementType.Withdraw)
-                {
-                    var oldAmount = currentClientAccount.Amount;
-                    currentClientAccount.Amount -= movement.Amount;
+                var oldAmount = currentClientAccount.Amount;
+                currentClientAccount.Amount -= movement.Amount;
 
-                    if (currentClientAccount.Amount < 0)
-                    {
-                        throw new InvalidBankMovementException(
-                            $"This account doesn't have balance for this Withdraw value.{Environment.NewLine}The current amount is: {oldAmount} and the requested amount i {movement.Amount}");
-                    }
-                }
-                else
+                if (currentClientAccount.Amount < 0)
                 {
-                    throw new InvalidBankMovementException("Invalid movement type.");
+                    throw new InvalidBankMovementException(
+                        $"This account doesn't have balance for this Withdraw value.{Environment.NewLine}The current amount is: {oldAmount} and the requested amount is {movement.Amount}");
                 }
-
-                await _context.SaveChangesAsync();
-                return currentClientAccount.Amount ?? 0;
             }
             else
             {
-                throw new ClientAccountNotFoundException("Client account not found.");
+                throw new InvalidBankMovementException("Invalid movement type.");
             }
+
+            await RegisterTransaction(currentClientAccount, movement);
+            await _context.SaveChangesAsync();
+            return currentClientAccount.Amount ?? 0;
+
+        }
+
+        public async Task<decimal> GetClientAmount(ClientAccountIdentifyerDto account)
+        {
+            ClientAccountIdentifyerDto.ValidateParams(account);
+            var currentClientAccount = await ValidadeAndGetClientAccountFromIdentifyerDto(account);
+            return currentClientAccount.Amount ?? 0;
+        }
+
+        public async Task<long> GetTotalOfMovementsByTimeFilter(DateTime startDate, DateTime endDate)
+        {
+            if (endDate.Hour == 0 && endDate.Minute == 0 && endDate.Second == 0)
+            {
+                endDate = endDate.AddDays(1).AddSeconds(-1);
+            }
+
+            return await _context.BankTransactions
+                .Where(t => t.OccurredAt >= startDate && t.OccurredAt <= endDate)
+                .CountAsync();
+        }
+
+        public async Task<PaginatedRespondeDto<ClientTransactionItem>> GetClientTransactionList(ClientAccountIdentifyerDto account, int pageNumber, int pageSize)
+        {
+            ClientAccountIdentifyerDto.ValidateParams(account);
+            var currentClientAccount = await ValidadeAndGetClientAccountFromIdentifyerDto(account);
+            var transactions = await _context.BankTransactions
+                .Where(t => t.ClientAccountId == currentClientAccount.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ClientTransactionItem
+                {
+                    Amount = x.Amount,
+                    OccurredAt = x.OccurredAt,
+                    TransactionType = x.TransactionType
+                }).ToListAsync();
+
+            return new PaginatedRespondeDto<ClientTransactionItem>(transactions, transactions.Count, pageNumber, pageSize);
+        }
+
+        private async Task<ClientAccount> ValidadeAndGetClientAccountFromIdentifyerDto(ClientAccountIdentifyerDto account)
+            => await _context.ClientAccounts.SingleOrDefaultAsync(c => c.Id == account.Id || c.Document == account.Document)
+                ?? throw new ClientAccountNotFoundException("Client account not found.");
+
+
+        private async Task RegisterTransaction(ClientAccount account, BankMovementDto movement)
+        {
+            await _context.BankTransactions.AddAsync(new BankTransaction
+            {
+                Amount = movement.Amount,
+                ClientAccountId = account.Id,
+                TransactionType = movement.Type,
+            });
         }
     }
 }

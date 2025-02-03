@@ -19,7 +19,7 @@ BEGIN
     -- Check if the type exists
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'transactiontypes') THEN
         -- Create the type if it doesn't exist
-        CREATE TYPE TransactionTypes AS ENUM ('In', 'Out');
+        CREATE TYPE TransactionTypes AS ENUM ('in', 'out');
     END IF;
 END $$;
 
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS public."BankTransactions"
     "Id" uuid NOT NULL DEFAULT gen_random_uuid(),
 	"ClientAccountId" uuid NOT NULL ,
     "TransactionType" TransactionTypes NOT NULL,
-    "OccurredAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    "OccurredAt" TIMESTAMPTZ NULL DEFAULT NOW(),
     "Amount" numeric(15, 2) NULL DEFAULT 0,
     CONSTRAINT "BankTransactions_PK" PRIMARY KEY ("Id"),
 	CONSTRAINT "BankTransactions_ClientAccount_FK" FOREIGN KEY ("ClientAccountId") REFERENCES public."ClientAccount" ("Id")
